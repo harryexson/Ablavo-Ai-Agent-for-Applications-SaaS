@@ -12,6 +12,8 @@ export interface Config {
   corsOrigins: string[];
   encryptionKey: string;
   cookieSecure: boolean;
+  /** e.g. .example.com — shares the sign-in session between the landing page, console and admin subdomains */
+  cookieDomain?: string;
   sessionTtlHours: number;
   agentSessionTtlMinutes: number;
   allowPrivateFetch: boolean;
@@ -43,6 +45,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     corsOrigins: (env.CORS_ORIGINS ?? `${portalUrl},${marketingUrl},${env.ADMIN_URL ?? "http://localhost:3002"}`).split(",").map((s) => s.trim()).filter(Boolean),
     encryptionKey,
     cookieSecure: mode === "production",
+    cookieDomain: env.COOKIE_DOMAIN || undefined,
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 24 * 14),
     agentSessionTtlMinutes: Number(env.AGENT_SESSION_TTL_MINUTES ?? 60 * 8),
     allowPrivateFetch: mode !== "production" && env.ALLOW_PRIVATE_FETCH !== "false",

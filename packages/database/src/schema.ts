@@ -444,6 +444,7 @@ export const subscriptions = pgTable("subscriptions", {
   id: text("id").primaryKey(),
   orgId: orgId().unique(),
   plan: text("plan").notNull().default("free"),
+  billingInterval: text("billing_interval"), // month | year
   status: text("status").notNull().default("active"), // active | trialing | past_due | canceled | incomplete
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),

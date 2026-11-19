@@ -13,7 +13,9 @@ import type { Database } from "@ablavo/database";
 import type { Config } from "./config";
 import { openApiDocument } from "./openapi";
 import { applicationRoutes } from "./routes/applications";
+import { accountRoutes } from "./routes/account";
 import { authRoutes } from "./routes/auth";
+import { billingRoutes } from "./routes/billing";
 import { contentRoutes } from "./routes/content";
 import { insightRoutes } from "./routes/insights";
 import { organizationRoutes } from "./routes/organizations";
@@ -99,6 +101,8 @@ export async function buildApp(config: Config, db: Database, overrides: Partial<
   await contentRoutes(app, ctx);
   await runtimeRoutes(app, ctx);
   await insightRoutes(app, ctx);
+  await billingRoutes(app, ctx);
+  await accountRoutes(app, ctx);
 
   return { app, ctx };
 }

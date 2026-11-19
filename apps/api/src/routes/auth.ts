@@ -3,7 +3,7 @@ import { z } from "zod";
 import { hashPassword, issueToken, passwordProblems, sha256, verifyPassword } from "@ablavo/auth";
 import { getPlan } from "@ablavo/billing";
 import { and, authSessions, emailTokens, eq, gte, isNull, organizationMembers, organizations, subscriptions, users } from "@ablavo/database";
-import { AppError, brand, newId } from "@ablavo/shared";
+import { AppError, ROLE_INFO, type OrgRole, brand, newId } from "@ablavo/shared";
 import { SESSION_COOKIE, currentUser, requireUser } from "../lib/guards";
 import { parse } from "../lib/http";
 import type { Ctx } from "../services/context";
@@ -15,7 +15,7 @@ export async function startSession(ctx: Ctx, reply: FastifyReply, userId: string
   const { token, hash } = issueToken("ses_", 40);
   const expiresAt = new Date(Date.now() + ctx.config.sessionTtlHours * 3600_000);
   await ctx.db.insert(authSessions).values({ id: newId("ses"), userId, tokenHash: hash, expiresAt, ip: req.ip, userAgent: String(req.headers["user-agent"] ?? "").slice(0, 300) });
-  reply.setCookie(SESSION_COOKIE, token, { path: "/", httpOnly: true, sameSite: "lax", secure: ctx.config.cookieSecure, expires: expiresAt });
+  reply.setCookie(SESSION_COOKIE, token, { path: "/", httpOnly: true, sameSite: "lax", secure: ctx.config.cookieSecure, expires: expiresAt, ...(ctx.config.cookieDomain ? { domain: ctx.config.cookieDomain } : {}) });
   return token;
 }
 
@@ -57,7 +57,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
   app.post("/v1/auth/logout", async (req, reply) => {
     const token = req.cookies?.[SESSION_COOKIE];
     if (token) await ctx.db.delete(authSessions).where(eq(authSessions.tokenHash, sha256(token)));
-    reply.clearCookie(SESSION_COOKIE, { path: "/" });
+    reply.clearCookie(SESSION_COOKIE, { path: "/", ...(ctx.config.cookieDomain ? { domain: ctx.config.cookieDomain } : {}) });
     return { ok: true };
   });
 
@@ -72,7 +72,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
       .where(eq(organizationMembers.userId, user.id));
     return {
       user: { id: user.id, email: user.email, name: user.name, emailVerified: Boolean(user.emailVerifiedAt), platformRole: user.platformRole },
-      organizations: memberships.map((m) => ({ ...m, planName: getPlan(m.plan).name })),
+      organizations: memberships.map((m) => ({ ...m, planName: getPlan(m.plan).name, permissions: ROLE_INFO[m.role as OrgRole]?.permissions ?? [] })),
     };
   });
 

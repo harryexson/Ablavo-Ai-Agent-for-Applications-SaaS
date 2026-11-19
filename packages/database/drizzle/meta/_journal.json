@@ -8,6 +8,13 @@
       "when": 1795060210017,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795125197994,
+      "tag": "0001_billing_interval",
+      "breakpoints": true
     }
   ]
 }

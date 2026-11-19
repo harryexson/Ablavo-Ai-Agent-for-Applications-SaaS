@@ -5,7 +5,9 @@
   "description": "Ablavo — AI onboarding, implementation, training and in-app assistance as a service.",
   "type": "module",
   "packageManager": "pnpm@9.12.0",
-  "engines": { "node": ">=20.11" },
+  "engines": {
+    "node": ">=20.11"
+  },
   "scripts": {
     "dev": "turbo run dev --parallel",
     "dev:api": "pnpm --filter @ablavo/api dev",
@@ -19,7 +21,8 @@
     "eval": "tsx tests/evals/run-evals.ts",
     "db:generate": "pnpm --filter @ablavo/database generate",
     "seed": "tsx scripts/seed-demo.ts",
-    "widget:build": "pnpm --filter @ablavo/widget build"
+    "widget:build": "pnpm --filter @ablavo/widget build",
+    "stripe:setup": "tsx scripts/stripe-setup.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

@@ -30,6 +30,7 @@ import {
   trainingLessons,
   trainingSessions,
 } from "@ablavo/database";
+import { overageSpendCents } from "@ablavo/billing";
 import { type ProgressState, applySignal, personalize, planAppliesTo, restart, skipStep } from "@ablavo/onboarding-engine";
 import {
   type ActionDefinition,
@@ -260,7 +261,11 @@ async function handleTurn(ctx: Ctx, rt: Runtime, body: z.infer<typeof messageSch
     .where(and(eq(conversations.endUserId, rt.session.endUserId), eq(messages.role, "user"), gte(messages.createdAt, since)));
   if (Number(n) >= runtime.config.limits.maxMessagesPerUserPerDay) throw new AppError("rate_limited", "Daily message limit reached. Please try again tomorrow.");
   const [org] = await ctx.db.select().from(organizations).where(eq(organizations.id, rt.session.orgId));
-  await ctx.usage.assertAllowance(rt.session.orgId, "ai_messages", { spendingCapReached: org?.settings.spendingCapCents === 0 });
+  // Spending cap: stop metered overage once projected overage spend reaches the cap the owner set.
+  const { plan: orgPlan } = await ctx.usage.plan(rt.session.orgId);
+  const cap = org?.settings.spendingCapCents;
+  const capReached = cap !== null && cap !== undefined && overageSpendCents(orgPlan, (await ctx.usage.used(rt.session.orgId, "ai_messages")) + 1) > cap;
+  const allowance = await ctx.usage.assertAllowance(rt.session.orgId, "ai_messages", { spendingCapReached: capReached });
 
   let conversationId = body.conversationId;
   if (conversationId) {
@@ -326,6 +331,11 @@ async function handleTurn(ctx: Ctx, rt: Runtime, body: z.infer<typeof messageSch
     },
   ]);
   await ctx.usage.record(rt.session.orgId, rt.app.id, "ai_messages", 1, assistantMsgId);
+  if (allowance.overage && ctx.stripe.configured) {
+    const sub = await ctx.usage.subscription(rt.session.orgId);
+    // Metered overage → Stripe Billing Meter. The message id makes retries idempotent.
+    if (sub?.stripeCustomerId) void ctx.stripe.reportMeterEvent(sub.stripeCustomerId, 1, assistantMsgId).catch((err) => console.error("[billing] meter event failed", err));
+  }
   await ctx.usage.record(rt.session.orgId, rt.app.id, "input_tokens", out.model.usage.inputTokens, assistantMsgId);
   await ctx.usage.record(rt.session.orgId, rt.app.id, "output_tokens", out.model.usage.outputTokens, assistantMsgId);
   await track(ctx, scopeOf(rt), "message.sent", { conversationId });
