@@ -15,6 +15,8 @@ export function stem(word: string): string {
       break;
     }
   }
+  // archive / archiving / archived → "archiv"
+  if (w.length > 4 && w.endsWith("e")) w = w.slice(0, -1);
   return w;
 }
 
