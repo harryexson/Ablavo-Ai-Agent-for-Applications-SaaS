@@ -41,7 +41,9 @@ export default function BillingPage() {
   const [cap, setCap] = useState("");
   const allowed = can(org?.role, "billing.manage");
 
+  const [wanted, setWanted] = useState<string | null>(null);
   useEffect(() => {
+    setWanted(new URLSearchParams(location.search).get("plan"));
     const p = new URLSearchParams(location.search).get("checkout");
     if (p === "success") setMsg({ tone: "ok", text: "Thanks! Your subscription is active. It can take a few seconds for the new plan to appear." });
     if (p === "cancelled") setMsg({ tone: "warn", text: "Checkout was cancelled — you haven't been charged." });
@@ -93,6 +95,16 @@ export default function BillingPage() {
           <Alert tone={msg.tone}>{msg.text}</Alert>
         </div>
       )}
+      {wanted && PAID.includes(wanted) && sub.data && sub.data.plan.id !== wanted && allowed && (
+        <div className="mb-6">
+          <Alert tone="warn">
+            You picked the <b className="capitalize">{wanted}</b> plan.{" "}
+            <Button size="sm" className="ml-2" loading={busy === wanted} onClick={() => void choose(wanted)}>
+              Continue to checkout
+            </Button>
+          </Alert>
+        </div>
+      )}
       {!allowed && (
         <div className="mb-6">
           <Alert>Your role ({org?.role}) can view billing but not change it. Ask an owner, admin or billing manager.</Alert>
@@ -112,7 +124,9 @@ export default function BillingPage() {
             description={
               current?.currentPeriodEnd
                 ? `${current.cancelAtPeriodEnd ? "Ends" : "Renews"} on ${new Date(current.currentPeriodEnd).toLocaleDateString()}`
-                : "Free plan — no payment method on file."
+                : sub.data?.plan.id === "free"
+                  ? "Free plan — no payment method on file."
+                  : "No Stripe subscription linked (plan set in development mode)."
             }
             action={
               hasPaid && allowed ? (

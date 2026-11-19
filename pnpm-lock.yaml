@@ -196,6 +196,15 @@ importers:
 
   apps/marketing:
     dependencies:
+      '@ablavo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@ablavo/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
+      '@ablavo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@ablavo/ui':
         specifier: workspace:*
         version: link:../../packages/ui

@@ -5,7 +5,8 @@
  *
  *   pnpm seed
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createDatabase } from "../packages/database/src/index";
@@ -15,9 +16,16 @@ import { loadConfig } from "../apps/api/src/config";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEMO_URL = process.env.DEMO_APP_URL ?? "http://localhost:5173";
 const API_URL = process.env.PUBLIC_API_URL ?? "http://localhost:4000";
-const DEV_EMAIL = process.env.SEED_EMAIL ?? "demo@example.com";
-const DEV_PASSWORD = process.env.SEED_PASSWORD ?? "demo-password-123";
+const DEV_EMAIL = process.env.SEED_EMAIL ?? "developer@example.com";
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
+const CRED_FILE = path.join(root, "apps/api/.dev-credentials");
+if (process.env.NODE_ENV === "production" && !process.env.SEED_PASSWORD) {
+  console.error("Refusing to seed a production database without SEED_PASSWORD.");
+  process.exit(1);
+}
+// A random password per installation, kept in a git-ignored file — never a well-known default.
+const previous = existsSync(CRED_FILE) ? /password=(S+)/.exec(readFileSync(CRED_FILE, "utf8"))?.[1] : undefined;
+const DEV_PASSWORD = process.env.SEED_PASSWORD ?? previous ?? `dev-${randomBytes(9).toString("base64url")}-1`;
 
 process.chdir(path.join(root, "apps/api")); // same .data directory the API uses
 const handle = await createDatabase(process.env.DATABASE_URL);
@@ -49,7 +57,7 @@ async function account(email: string, name: string) {
 
 await account(ADMIN_EMAIL, "Platform Admin");
 cookie = "";
-await account(DEV_EMAIL, "Demo Developer");
+await account(DEV_EMAIL, "Developer");
 const me = await call("GET", "/v1/auth/me");
 if (me.organizations.length) {
   console.log("Demo data already exists. Delete apps/api/.data to reseed from scratch.");
@@ -212,9 +220,12 @@ writeFileSync(
 );
 writeFileSync(path.join(root, "apps/api/.env.demo"), `DEMO_APP_ID=${appId}\n`);
 
+writeFileSync(
+  CRED_FILE,
+  `# Local development logins written by scripts/seed-demo.ts (git-ignored)\ndeveloper=${DEV_EMAIL}  (owner of the Lumen Labs workspace)\nadmin=${ADMIN_EMAIL}  (platform admin console)\npassword=${DEV_PASSWORD}\n`,
+);
 console.log(`\n✓ Seeded demo
-  Developer portal login : ${DEV_EMAIL} / ${DEV_PASSWORD}
-  Platform admin login   : ${ADMIN_EMAIL} / ${DEV_PASSWORD}
+  Logins (developer + admin) : apps/api/.dev-credentials
   Demo application id    : ${appId}  (written to apps/api/.env.demo)
   Demo app credentials   : apps/demo-app/.env\n`);
 await app.close();

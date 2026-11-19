@@ -102,7 +102,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
     if (user) {
       const { token, hash } = issueToken("rst_", 32);
       await ctx.db.insert(emailTokens).values({ id: newId("tok"), userId: user.id, purpose: "reset_password", tokenHash: hash, expiresAt: new Date(Date.now() + 3600_000) });
-      const url = `${ctx.config.portalUrl}/reset-password?token=${token}`;
+      const url = `${ctx.config.marketingUrl}/reset-password?token=${token}`;
       await ctx.email.send({ to: user.email, subject: `Reset your ${brand.name} password`, text: `Reset your password: ${url}\n\nIf you didn't ask for this, ignore this email.` });
       if (!ctx.email.configured && ctx.config.env !== "production") devResetUrl = url;
     }

@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const api = process.env.API_URL ?? "http://localhost:4000";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 export default {
+  outputFileTracingRoot: path.join(path.dirname(fileURLToPath(import.meta.url)), "../.."),
   reactStrictMode: true,
   // Served under the landing-page domain at /console (Vercel multi-zone) so one sign-in covers both.
   basePath: "/console",

@@ -41,6 +41,16 @@ function CreateOrganization() {
               const org = await api<{ id: string }>("/v1/organizations", { body: { name: f.get("name"), type: f.get("type") } });
               await refresh();
               setOrgId(org.id);
+              // Came from a plan on the pricing page → continue to checkout.
+              try {
+                const plan = sessionStorage.getItem("selectedPlan");
+                if (plan && plan !== "free") {
+                  sessionStorage.removeItem("selectedPlan");
+                  location.href = `/console/billing?plan=${encodeURIComponent(plan)}`;
+                }
+              } catch {
+                /* storage unavailable */
+              }
             } catch (err) {
               setError((err as Error).message);
             } finally {

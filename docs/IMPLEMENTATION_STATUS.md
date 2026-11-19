@@ -11,9 +11,16 @@ _Last updated: 2026-11-18 · branch `feat/platform-foundation`_
 - **SDKs**: `@ablavo/sdk`, `@ablavo/react`, `@ablavo/widget` (37 KB, shadow DOM, chat, guide, action forms, training overlay, voice, en/es/fr).
 - **Demo**: `apps/demo-app` (Lumen Projects) + `pnpm seed`. Verified over real HTTP and in a browser: session handoff → grounded answer with citations → highlight → action proposal → confirm → signed host call.
 
+## Added 2026-11-19
+- Pricing and billing (see docs/BILLING.md): Free / Starter $49 / Growth $249 / Business $799 / Enterprise, monthly or annual, metered overage, spending caps, Stripe Checkout + customer portal, cancel/resume, idempotent `pnpm stripe:setup`. **Not yet run against a real Stripe account.**
+- Role matrix (owner, admin, developer, analyst, billing) shared by API and console; creators become owners.
+- Account management: profile, password change, email change with re-verification, sessions, account deletion.
+- Landing site (apps/marketing): home, pricing, developers, security, contact, privacy/terms templates, sign in, sign up, forgot and reset password. The console is served at /console on the same domain.
+- Console pages: billing, team, account, settings, onboarding builder, training studio, actions, analytics. All build cleanly.
+- 55 automated tests passing.
+
 ## In progress / not yet built
-- Developer portal: auth pages, shell, overview, new app, setup/credentials, agent (with sandbox chat), knowledge, App map pages written but **not yet built or run**. Still missing: onboarding builder page, training studio page, actions page, analytics page, billing, team, settings (the shared `StepsEditor` exists).
-- Admin portal UI (APIs exist), marketing website, `apps/documentation`.
+- Admin portal UI (APIs exist), `apps/documentation`.
 - The `docs/` set from the master prompt (only this file so far), CI workflow, Dockerfile/Railway/Vercel configs, `.env.example`, AI eval runner, Playwright specs.
 - React Native SDK is written but unverified (excluded from typecheck).
 - Not done: OAuth sign-in, PostgreSQL RLS policies (tenant isolation is enforced in the app layer and tested), server-side voice metering.

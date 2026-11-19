@@ -9,6 +9,18 @@ import type { Ctx } from "../services/context";
 
 /** Self-service account management for the signed-in developer. */
 export async function accountRoutes(app: FastifyInstance, ctx: Ctx) {
+  /** Public "contact sales" form. Rate limited; forwarded to the sales inbox. */
+  app.post("/v1/contact", { config: { rateLimit: { max: 5, timeWindow: "10 minutes" } } }, async (req) => {
+    const b = parse(z.object({ name: z.string().min(1).max(120), email: z.string().email(), company: z.string().max(160).optional(), size: z.string().max(40).optional(), message: z.string().min(1).max(4000) }), req.body);
+    await ctx.email.send({ to: brand.salesEmail, subject: `Sales inquiry from ${b.name}${b.company ? ` (${b.company})` : ""}`, text: `From: ${b.name} <${b.email}>
+Company: ${b.company ?? "-"}
+Users: ${b.size ?? "-"}
+
+${b.message}` });
+    await ctx.audit.log({ orgId: null, actorType: "system", action: "sales.contact_received", metadata: { company: b.company, size: b.size }, ip: req.ip });
+    return { ok: true };
+  });
+
   app.get("/v1/roles", async () => ({ data: Object.entries(ROLE_INFO).map(([id, r]) => ({ id, ...r })) }));
 
   app.get("/v1/account", async (req) => {
