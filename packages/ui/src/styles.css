@@ -1,0 +1,54 @@
+/* Design tokens shared by every web app. Space-separated RGB so Tailwind can apply opacity. */
+:root {
+  --bg: 250 250 252;
+  --surface: 255 255 255;
+  --muted: 243 244 247;
+  --line: 228 230 236;
+  --ink: 17 19 26;
+  --ink-2: 74 81 96;
+  --ink-3: 122 129 145;
+  --brand: 79 70 229;
+  --brand-ink: 255 255 255;
+  --brand-soft: 238 237 255;
+  --ok: 18 128 92;
+  --warn: 161 92 0;
+  --err: 192 54 44;
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg: 11 12 16;
+  --surface: 21 23 28;
+  --muted: 29 32 39;
+  --line: 45 49 59;
+  --ink: 238 240 244;
+  --ink-2: 181 187 200;
+  --ink-3: 134 141 156;
+  --brand: 129 120 255;
+  --brand-ink: 255 255 255;
+  --brand-soft: 37 35 74;
+  --ok: 52 190 140;
+  --warn: 230 160 60;
+  --err: 240 100 90;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 11 12 16;
+    --surface: 21 23 28;
+    --muted: 29 32 39;
+    --line: 45 49 59;
+    --ink: 238 240 244;
+    --ink-2: 181 187 200;
+    --ink-3: 134 141 156;
+    --brand: 129 120 255;
+    --brand-soft: 37 35 74;
+    --ok: 52 190 140;
+    --warn: 230 160 60;
+    --err: 240 100 90;
+    color-scheme: dark;
+  }
+}
+html { -webkit-text-size-adjust: 100%; }
+body { background: rgb(var(--bg)); color: rgb(var(--ink)); font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
