@@ -138,9 +138,9 @@ function directiveText(d: Directive, input: TurnInput): string {
       return d.message;
     case "propose_action":
       return d.missing.length
-        ? `I can ${d.name.toLowerCase()} for you. Please fill in ${d.missing.join(", ")} and confirm.`
+        ? `I can run "${d.name}" for you. Please fill in ${d.missing.join(", ")} and confirm.`
         : d.requiresConfirmation
-          ? `I'm ready to ${d.name.toLowerCase()}. Please review the details and confirm.`
+          ? `Ready to run "${d.name}". Please review the details and confirm.`
           : `Running "${d.name}" now.`;
   }
 }

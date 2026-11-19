@@ -1,9 +1,11 @@
 import Ajv, { type ErrorObject } from "ajv";
+import addFormats from "ajv-formats";
 import type { ActionDefinition } from "@ablavo/shared";
 import { signPayload } from "@ablavo/auth";
 import { type Principal, hasAll } from "@ablavo/workflow-engine";
 
 const ajv = new Ajv({ allErrors: true, coerceTypes: false, removeAdditional: "all", useDefaults: true, strict: false });
+addFormats(ajv);
 const cache = new Map<string, ReturnType<typeof ajv.compile>>();
 
 function validator(schema: Record<string, unknown>) {

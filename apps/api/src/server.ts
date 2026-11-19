@@ -1,3 +1,11 @@
+// Local env files (production platforms inject real environment variables instead).
+for (const f of [".env", ".env.demo"]) {
+  try {
+    process.loadEnvFile(f);
+  } catch {
+    /* optional */
+  }
+}
 import { createDatabase } from "@ablavo/database";
 import { loadConfig } from "./config";
 import { buildApp } from "./app";

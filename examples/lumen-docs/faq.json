@@ -1,0 +1,5 @@
+[
+  { "question": "How many projects can I create?", "answer": "The Free workspace includes 10 active projects. Archived projects do not count toward the limit." },
+  { "question": "Can I export my data?", "answer": "Admins can export all projects as CSV from Settings under Data export." },
+  { "question": "How do I reset my password?", "answer": "Use the Forgot password link on the sign-in page. A reset link is emailed to you and expires after one hour." }
+]

@@ -1,0 +1,8 @@
+{
+  "name": "@ablavo/demo-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lumen Projects — standalone sample host application",
+  "scripts": { "dev": "tsx watch src/server.ts", "start": "tsx src/server.ts" }
+}

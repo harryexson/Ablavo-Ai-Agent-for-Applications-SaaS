@@ -72,7 +72,7 @@ function pickTool(tools: ToolSpec[], question: string): ToolCall | undefined {
   }
 
   // "How do I create…" is a question to answer; "Create…" / "Can you create…" is a request to act.
-  const informational = /^\s*(how|what|why|where|when|which|is|are|does|do i|should)\b/i.test(question);
+  const informational = /^\s*(how|what|why|where|when|which|who|whom|whose|is|are|does|do i|can i|could i|should|tell me about|explain)\b/i.test(question);
   if (ACTION_VERBS.test(question) && !informational) {
     const q = tokenize(question);
     let best: { tool: ToolSpec; score: number } | undefined;
