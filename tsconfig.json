@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.tsx", "apps/api/src/**/*.ts", "apps/demo-app/src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["packages/react-native-sdk/**", "node_modules", "**/dist/**"]
+}
