@@ -15,6 +15,7 @@ export const widgetCss = (primary: string) => `
   --bg: #15171c; --bg-2: #1d2027; --bg-3: #272b34; --ink: #eef0f4; --ink-2: #b5bbc8; --ink-3: #868d9c; --line: #2d313b;
   --shadow: 0 18px 48px rgba(0,0,0,.5);
 }
+[hidden] { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
