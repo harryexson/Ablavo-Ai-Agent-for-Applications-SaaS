@@ -163,7 +163,7 @@ export default function AgentPage() {
                 </div>
               ) : (
                 <p className="text-sm text-ink-3">
-                  No actions registered yet. <a className="text-brand" href={`/apps/${appId}/actions`}>Register actions</a>
+                  No actions registered yet. <a className="text-brand" href={`/console/apps/${appId}/actions`}>Register actions</a>
                 </p>
               )}
             </div>

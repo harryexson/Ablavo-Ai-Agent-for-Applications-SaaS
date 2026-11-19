@@ -33,7 +33,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageHeader eyebrow={org?.name} title={`Welcome, ${me?.user.name.split(" ")[0] ?? ""}`} description="Your applications, assistant usage and plan at a glance." actions={<ButtonLink href="/apps/new">New application</ButtonLink>} />
+      <PageHeader eyebrow={org?.name} title={`Welcome, ${me?.user.name.split(" ")[0] ?? ""}`} description="Your applications, assistant usage and plan at a glance." actions={<ButtonLink href="/console/apps/new">New application</ButtonLink>} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Applications" value={`${usage.data?.applications.used ?? "—"}`} hint={usage.data?.applications.limit ? `of ${usage.data.applications.limit} on ${usage.data.plan.name}` : usage.data?.plan.name} />
         <Stat label="AI messages this month" value={fmt.num(metric("ai_messages")?.used ?? 0)} hint={metric("ai_messages")?.limit ? `of ${fmt.num(metric("ai_messages")!.limit)}` : "Unlimited"} />
@@ -45,13 +45,13 @@ export default function Overview() {
         <Card className="lg:col-span-2">
           <CardHeader title="Applications" description="Each application gets its own assistant, knowledge and credentials." />
           {apps.data && apps.data.data.length === 0 ? (
-            <EmptyState title="Register your first application" description="Tell us about your app, add documentation, and you'll have a working assistant in a few minutes." action={<ButtonLink href="/apps/new">Register application</ButtonLink>} />
+            <EmptyState title="Register your first application" description="Tell us about your app, add documentation, and you'll have a working assistant in a few minutes." action={<ButtonLink href="/console/apps/new">Register application</ButtonLink>} />
           ) : (
             <Table head={["Name", "Platform", "Created"]}>
               {apps.data?.data.map((a) => (
                 <tr key={a.id} className="hover:bg-muted/50">
                   <Td>
-                    <a className="font-semibold text-ink hover:text-brand" href={`/apps/${a.id}`}>
+                    <a className="font-semibold text-ink hover:text-brand" href={`/console/apps/${a.id}`}>
                       {a.name}
                     </a>
                   </Td>
@@ -65,7 +65,7 @@ export default function Overview() {
           )}
         </Card>
         <Card>
-          <CardHeader title="Monthly allowance" description={usage.data?.plan.name} action={<ButtonLink href="/billing" variant="secondary" size="sm">Manage</ButtonLink>} />
+          <CardHeader title="Monthly allowance" description={usage.data?.plan.name} action={<ButtonLink href="/console/billing" variant="secondary" size="sm">Manage</ButtonLink>} />
           <div className="flex flex-col gap-4 p-5">
             {usage.data?.metrics
               .filter((m) => LABELS[m.metric])

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Card, Logo } from "@ablavo/ui";
 
 const product = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Ablavo";
-const marketing = process.env.NEXT_PUBLIC_MARKETING_URL ?? "http://localhost:3000";
+const marketing = process.env.NEXT_PUBLIC_MARKETING_URL || "/";
 
 export function AuthCard({ title, subtitle, children, footer }: { title: string; subtitle?: ReactNode; children: ReactNode; footer?: ReactNode }) {
   return (

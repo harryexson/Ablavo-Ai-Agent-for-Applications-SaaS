@@ -40,7 +40,7 @@ export default function VerifyEmailPage() {
   if (state === "done") {
     return (
       <AuthCard title="Email verified" subtitle="Your account is ready.">
-        <Button size="lg" className="w-full" onClick={() => (location.href = "/")}>
+        <Button size="lg" className="w-full" onClick={() => (location.href = "/console")}>
           Continue to the console
         </Button>
       </AuthCard>

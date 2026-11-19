@@ -2,12 +2,19 @@
   "name": "@ablavo/developer-portal",
   "version": "0.1.0",
   "private": true,
-  "scripts": { "dev": "next dev -p 3001", "build": "next build", "start": "next start -p 3001", "typecheck": "tsc --noEmit" },
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@ablavo/ui": "workspace:*",
     "next": "^15.5.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@ablavo/shared": "workspace:*",
+    "@ablavo/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

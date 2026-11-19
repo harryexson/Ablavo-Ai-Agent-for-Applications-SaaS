@@ -153,6 +153,12 @@ importers:
 
   apps/developer-portal:
     dependencies:
+      '@ablavo/sdk':
+        specifier: workspace:*
+        version: link:../../packages/javascript-sdk
+      '@ablavo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@ablavo/ui':
         specifier: workspace:*
         version: link:../../packages/ui

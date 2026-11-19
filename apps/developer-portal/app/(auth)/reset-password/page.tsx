@@ -12,7 +12,7 @@ export default function ResetPasswordPage() {
       {done ? (
         <Alert tone="ok">
           Password updated.{" "}
-          <a className="font-semibold underline" href="/login">
+          <a className="font-semibold underline" href="/console/login">
             Sign in
           </a>
         </Alert>

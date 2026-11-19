@@ -213,7 +213,7 @@ function HelpScreen() {
                     </span>
                     <span className={cx("flex-1 text-sm", s.done ? "text-ink-3 line-through" : "text-ink")}>
                       {link && !s.done ? (
-                        <a className="hover:text-brand" href={`/apps/${appId}/${link}`}>
+                        <a className="hover:text-brand" href={`/console/apps/${appId}/${link}`}>
                           {s.title}
                         </a>
                       ) : (

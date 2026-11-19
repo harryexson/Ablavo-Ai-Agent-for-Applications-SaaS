@@ -31,7 +31,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (mode === "production") throw new Error("ENCRYPTION_KEY is required in production (32 random bytes, base64)");
     encryptionKey = mode === "test" ? randomBytes(32).toString("base64") : "dev-only-insecure-encryption-key-change-me";
   }
-  const portalUrl = env.PORTAL_URL ?? "http://localhost:3001";
+  const portalUrl = env.PORTAL_URL ?? "http://localhost:3000/console";
   const marketingUrl = env.MARKETING_URL ?? "http://localhost:3000";
   return {
     env: mode,
@@ -42,7 +42,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     publicApiUrl: env.PUBLIC_API_URL ?? `http://localhost:${env.PORT ?? 4000}`,
     portalUrl,
     marketingUrl,
-    corsOrigins: (env.CORS_ORIGINS ?? `${portalUrl},${marketingUrl},${env.ADMIN_URL ?? "http://localhost:3002"}`).split(",").map((s) => s.trim()).filter(Boolean),
+    corsOrigins: (env.CORS_ORIGINS ?? `${new URL(portalUrl).origin},${marketingUrl},${env.ADMIN_URL ?? "http://localhost:3002"}`).split(",").map((s) => s.trim()).filter(Boolean),
     encryptionKey,
     cookieSecure: mode === "production",
     cookieDomain: env.COOKIE_DOMAIN || undefined,

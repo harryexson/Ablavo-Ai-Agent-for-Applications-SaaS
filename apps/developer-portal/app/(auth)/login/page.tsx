@@ -18,7 +18,7 @@ export default function LoginPage() {
       footer={
         <>
           New here?{" "}
-          <a className="font-semibold text-brand" href="/signup">
+          <a className="font-semibold text-brand" href="/console/signup">
             Create an account
           </a>
         </>
@@ -34,7 +34,8 @@ export default function LoginPage() {
           try {
             await api("/v1/auth/login", { body: { email: f.get("email"), password: f.get("password") } });
             await refresh();
-            router.push(new URLSearchParams(location.search).get("next") ?? "/");
+            const next = new URLSearchParams(location.search).get("next");
+            location.href = next?.startsWith("/console") ? next : "/console";
           } catch (err) {
             setError((err as Error).message);
           } finally {
@@ -50,7 +51,7 @@ export default function LoginPage() {
           label="Password"
           htmlFor="password"
           hint={
-            <a className="text-brand" href="/forgot-password">
+            <a className="text-brand" href="/console/forgot-password">
               Forgot password?
             </a>
           }

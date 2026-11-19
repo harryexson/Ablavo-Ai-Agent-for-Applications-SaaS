@@ -6,7 +6,7 @@ import { api, useApi } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
 const product = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Ablavo";
-const docsUrl = `${process.env.NEXT_PUBLIC_MARKETING_URL ?? "http://localhost:3000"}/docs`;
+const docsUrl = `${process.env.NEXT_PUBLIC_MARKETING_URL ?? ""}/developers`;
 
 interface AppRow {
   id: string;
@@ -77,7 +77,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState(false);
 
   useEffect(() => {
-    if (!loading && !me) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    if (!loading && !me) location.href = `/login?next=${encodeURIComponent(`/console${pathname}`)}`;
     else if (!loading && me && !me.user.emailVerified) router.replace("/verify-email");
   }, [loading, me, pathname, router]);
 
@@ -100,26 +100,29 @@ export function Shell({ children }: { children: ReactNode }) {
           </option>
         ))}
       </Select>
-      <NavLink href="/" active={pathname === "/"}>
+      <NavLink href="/console" active={pathname === "/"}>
         Overview
       </NavLink>
       <div className="mt-3 px-3 text-[11px] font-bold uppercase tracking-wider text-ink-3">Applications</div>
       {apps.data?.data.map((a) => (
-        <NavLink key={a.id} href={`/apps/${a.id}`} active={appMatch?.[1] === a.id}>
+        <NavLink key={a.id} href={`/console/apps/${a.id}`} active={appMatch?.[1] === a.id}>
           <span className="truncate">{a.name}</span>
         </NavLink>
       ))}
-      <NavLink href="/apps/new" active={pathname === "/apps/new"}>
+      <NavLink href="/console/apps/new" active={pathname === "/apps/new"}>
         <span className="text-brand">+ New application</span>
       </NavLink>
       <div className="mt-3 px-3 text-[11px] font-bold uppercase tracking-wider text-ink-3">Workspace</div>
-      <NavLink href="/billing" active={pathname.startsWith("/billing")}>
+      <NavLink href="/console/billing" active={pathname.startsWith("/billing")}>
         Billing &amp; usage
       </NavLink>
-      <NavLink href="/team" active={pathname.startsWith("/team")}>
+      <NavLink href="/console/team" active={pathname.startsWith("/team")}>
         Team
       </NavLink>
-      <NavLink href="/settings" active={pathname.startsWith("/settings")}>
+      <NavLink href="/console/account" active={pathname.startsWith("/account")}>
+        Your account
+      </NavLink>
+      <NavLink href="/console/settings" active={pathname.startsWith("/settings")}>
         Settings
       </NavLink>
       <NavLink href={docsUrl} active={false}>
@@ -176,10 +179,10 @@ export function AppTabs({ appId }: { appId: string }) {
   return (
     <nav className="mb-6 flex gap-1 overflow-x-auto border-b border-line" aria-label="Application">
       {tabs.map(([p, label]) => {
-        const href = `/apps/${appId}${p}`;
+        const href = `/apps/${appId}${p}`; // basePath-relative, for matching usePathname()
         const active = pathname === href;
         return (
-          <a key={p} href={href} aria-current={active ? "page" : undefined} className={cx("-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-semibold", active ? "border-brand text-ink" : "border-transparent text-ink-3 hover:text-ink")}>
+          <a key={p} href={`/console${href}`} aria-current={active ? "page" : undefined} className={cx("-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-semibold", active ? "border-brand text-ink" : "border-transparent text-ink-3 hover:text-ink")}>
             {label}
           </a>
         );

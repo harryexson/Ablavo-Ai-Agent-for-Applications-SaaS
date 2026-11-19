@@ -49,3 +49,6 @@ export const ROLE_INFO: Record<OrgRole, { label: string; description: string; pe
 };
 
 export const can = (role: string | null | undefined, permission: Permission) => Boolean(role && ROLE_INFO[role as OrgRole]?.permissions.includes(permission));
+
+/** Ordered list of workspace roles (browser-safe; no runtime dependencies). */
+export const ORG_ROLES = Object.keys(ROLE_INFO) as OrgRole[];
