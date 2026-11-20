@@ -124,6 +124,8 @@ export const planHasFeature = (plan: Plan, feature: string) => plan.features.inc
 /** Stripe lookup keys — stable identifiers so price IDs never need to be copied into config. */
 export const lookupKey = (plan: PaidPlanId, kind: BillingInterval | "overage") => `ablavo_${plan}_${kind === "overage" ? "overage" : kind === "month" ? "monthly" : "yearly"}`;
 export const METER_EVENT_NAME = "ablavo_ai_messages";
+/** Tag on every Stripe object we create, so a shared Stripe account can host other products safely. */
+export const APP_TAG = "ablavo";
 
 export interface EntitlementCheck {
   allowed: boolean;
@@ -164,11 +166,13 @@ export const currentPeriod = (d = new Date()) => `${d.getUTCFullYear()}-${String
 export interface StripeConfig {
   secretKey?: string;
   webhookSecret?: string;
+  /** Optional explicit customer-portal configuration id; otherwise the one tagged metadata.app=ablavo is used. */
+  portalConfiguration?: string;
   apiBase?: string;
 }
 
 export function stripeConfigFromEnv(env: Record<string, string | undefined>): StripeConfig {
-  return { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET };
+  return { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET, portalConfiguration: env.STRIPE_PORTAL_CONFIGURATION };
 }
 
 type Params = Record<string, string | number | boolean | undefined>;
@@ -223,7 +227,7 @@ export class StripeClient {
   }
 
   createCustomer(orgId: string, name: string, email: string) {
-    return this.call<{ id: string }>("POST", "/customers", { name, email, "metadata[org_id]": orgId }, `customer-${orgId}`);
+    return this.call<{ id: string }>("POST", "/customers", { name, email, "metadata[org_id]": orgId, "metadata[app]": APP_TAG }, `customer-${orgId}`);
   }
 
   async createCheckoutSession(opts: { customerId: string; orgId: string; plan: PaidPlanId; interval: BillingInterval; successUrl: string; cancelUrl: string }) {
@@ -242,14 +246,31 @@ export class StripeClient {
       client_reference_id: opts.orgId,
       "subscription_data[metadata][org_id]": opts.orgId,
       "subscription_data[metadata][plan]": opts.plan,
+      "subscription_data[metadata][app]": APP_TAG,
+      "metadata[app]": APP_TAG,
       allow_promotion_codes: true,
       billing_address_collection: "auto",
       "automatic_tax[enabled]": false,
     });
   }
 
-  createPortalSession(customerId: string, returnUrl: string) {
-    return this.call<{ url: string }>("POST", "/billing_portal/sessions", { customer: customerId, return_url: returnUrl });
+  private portalConfigId: string | null | undefined;
+
+  /**
+   * The Stripe account may be shared with other products, so we never rely on (or modify) its default
+   * portal configuration: we use our own, tagged metadata.app = "ablavo".
+   */
+  async portalConfiguration(): Promise<string | null> {
+    if (this.config.portalConfiguration) return this.config.portalConfiguration;
+    if (this.portalConfigId !== undefined) return this.portalConfigId;
+    const res = await this.call<{ data: { id: string; active: boolean; metadata: Record<string, string> }[] }>("GET", "/billing_portal/configurations", { limit: 100 });
+    this.portalConfigId = res.data.find((c) => c.active && c.metadata?.app === APP_TAG)?.id ?? null;
+    return this.portalConfigId;
+  }
+
+  async createPortalSession(customerId: string, returnUrl: string) {
+    const configuration = await this.portalConfiguration();
+    return this.call<{ url: string }>("POST", "/billing_portal/sessions", { customer: customerId, return_url: returnUrl, ...(configuration ? { configuration } : {}) });
   }
 
   /** Reports one overage message to the Stripe Billing Meter. `identifier` makes retries idempotent. */

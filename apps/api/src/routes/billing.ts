@@ -135,9 +135,10 @@ export async function billingRoutes(app: FastifyInstance, ctx: Ctx) {
       const [s] = await ctx.db.select().from(subscriptions).where(eq(subscriptions.stripeCustomerId, String(obj.customer)));
       orgId = s?.orgId ?? null;
     }
+    // The Stripe account may serve other products too: ignore (and never store) events that are not ours.
+    if (!orgId) return reply.send({ received: true, ignored: true });
     const inserted = await ctx.db.insert(billingEvents).values({ id: event.id, orgId, type: event.type, payload: event as unknown as Record<string, unknown> }).onConflictDoNothing().returning();
     if (!inserted.length) return reply.send({ received: true, duplicate: true });
-    if (!orgId) return reply.send({ received: true, unmatched: true });
 
     if (event.type === "checkout.session.completed") {
       await ctx.db.update(subscriptions).set({ stripeCustomerId: String(obj.customer), stripeSubscriptionId: String(obj.subscription), updatedAt: new Date() }).where(eq(subscriptions.orgId, orgId));

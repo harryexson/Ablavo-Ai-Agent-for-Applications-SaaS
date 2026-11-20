@@ -58,3 +58,17 @@ A grounded reply is ~3,000 input + ~300 output tokens. On efficient models (~$0.
 STRIPE_SECRET_KEY=sk_test_... pnpm stripe:setup --webhook-url https://<api-host>/v1/billing/stripe/webhook
 ```
 Then set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` on the API. Without them, local development switches plans instantly without payment.
+
+## Current Stripe state (sandbox, created 2026-11-19)
+
+Account: the company Stripe **sandbox** (test mode). The account is shared with other products, so every Ablavo object is tagged `metadata.app = "ablavo"` and the account's default customer-portal configuration is never modified.
+
+| Object | ID / lookup key |
+|---|---|
+| Products | `ablavo_starter`, `ablavo_growth`, `ablavo_business` |
+| Monthly prices | `ablavo_starter_monthly` ($49), `ablavo_growth_monthly` ($249), `ablavo_business_monthly` ($799) |
+| Annual prices | `ablavo_starter_yearly` ($490), `ablavo_growth_yearly` ($2,490), `ablavo_business_yearly` ($7,990) |
+| Customer portal | Separate "Ablavo" configuration (plan/interval switching, invoices, payment methods, cancel at period end) |
+| Overage meter + metered prices | **Not created yet** — the Stripe connector cannot create Billing Meters. Run `pnpm stripe:setup` with the sandbox secret key to add them; checkout works without them (no overage line). |
+
+Webhook events for the account's other products are ignored and not stored (they carry no Ablavo `org_id`).

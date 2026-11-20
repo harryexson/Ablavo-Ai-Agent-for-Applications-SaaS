@@ -7,7 +7,7 @@
  * billed through a Billing Meter. Prices are addressed by lookup key (ablavo_<plan>_<monthly|yearly|overage>),
  * so no price IDs need to be copied into configuration.
  */
-import { PAID_PLANS, PLANS, METER_EVENT_NAME, StripeClient, lookupKey } from "../packages/billing/src/index";
+import { APP_TAG, METER_EVENT_NAME, PAID_PLANS, PLANS, StripeClient, lookupKey } from "../packages/billing/src/index";
 
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) {
@@ -45,7 +45,7 @@ async function ensureProduct(plan: (typeof PAID_PLANS)[number]): Promise<string>
     await stripe.call<Obj>("GET", `/products/${id}`);
     await stripe.call<Obj>("POST", `/products/${id}`, { name: `Ablavo ${PLANS[plan].name}`, description: `${PLANS[plan].tagline}. Includes REST API, SDKs and widget.` });
   } catch {
-    await stripe.call<Obj>("POST", "/products", { id, name: `Ablavo ${PLANS[plan].name}`, description: `${PLANS[plan].tagline}. Includes REST API, SDKs and widget.`, "metadata[plan]": plan });
+    await stripe.call<Obj>("POST", "/products", { id, name: `Ablavo ${PLANS[plan].name}`, description: `${PLANS[plan].tagline}. Includes REST API, SDKs and widget.`, "metadata[plan]": plan, "metadata[app]": APP_TAG });
     console.log(`  + product ${id}`);
   }
   return id;
@@ -96,11 +96,12 @@ portalProducts.forEach((p, i) => {
   portal[`features[subscription_update][products][${i}][product]`] = p.product;
   p.prices.forEach((price, j) => (portal[`features[subscription_update][products][${i}][prices][${j}]`] = price));
 });
-const configs = await stripe.call<{ data: (Obj & { is_default: boolean })[] }>("GET", "/billing_portal/configurations", { limit: 10 });
-const def = configs.data.find((c) => c.is_default);
-if (def) await stripe.call("POST", `/billing_portal/configurations/${def.id}`, portal);
-else await stripe.call("POST", "/billing_portal/configurations", portal);
-console.log("Customer portal configured.");
+// Never modify the account's default portal (the account may serve other products): use our own, tagged configuration.
+const configs = await stripe.call<{ data: (Obj & { active: boolean; metadata: Record<string, string> })[] }>("GET", "/billing_portal/configurations", { limit: 100 });
+const ours = configs.data.find((c) => c.active && c.metadata?.app === APP_TAG);
+if (ours) await stripe.call("POST", `/billing_portal/configurations/${ours.id}`, portal);
+else await stripe.call("POST", "/billing_portal/configurations", { ...portal, name: "Ablavo", "metadata[app]": APP_TAG });
+console.log(`Customer portal configured (${ours ? "updated" : "created"} Ablavo configuration; the account default is untouched).`);
 
 if (webhookUrl && webhookUrl.startsWith("https://")) {
   const hooks = await stripe.call<{ data: (Obj & { url: string })[] }>("GET", "/webhook_endpoints", { limit: 100 });
