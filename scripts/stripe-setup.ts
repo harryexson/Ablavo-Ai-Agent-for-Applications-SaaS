@@ -7,9 +7,17 @@
  * billed through a Billing Meter. Prices are addressed by lookup key (ablavo_<plan>_<monthly|yearly|overage>),
  * so no price IDs need to be copied into configuration.
  */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { APP_TAG, METER_EVENT_NAME, PAID_PLANS, PLANS, StripeClient, lookupKey } from "../packages/billing/src/index";
 
-const key = process.env.STRIPE_SECRET_KEY;
+// Use the key from apps/api/.env unless one is already set in the shell.
+try {
+  if (!process.env.STRIPE_SECRET_KEY) process.loadEnvFile(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../apps/api/.env"));
+} catch {
+  /* optional */
+}
+const key = process.env.STRIPE_SECRET_KEY && !/REPLACE_ME/.test(process.env.STRIPE_SECRET_KEY) ? process.env.STRIPE_SECRET_KEY : undefined;
 if (!key) {
   console.error("Set STRIPE_SECRET_KEY (use a test-mode key first: sk_test_...)");
   process.exit(1);

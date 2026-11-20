@@ -172,7 +172,9 @@ export interface StripeConfig {
 }
 
 export function stripeConfigFromEnv(env: Record<string, string | undefined>): StripeConfig {
-  return { secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET, portalConfiguration: env.STRIPE_PORTAL_CONFIGURATION };
+  // Placeholder values (e.g. sk_test_REPLACE_ME) count as "not configured".
+  const real = (v?: string) => (v && !/REPLACE_ME/i.test(v) ? v : undefined);
+  return { secretKey: real(env.STRIPE_SECRET_KEY), webhookSecret: real(env.STRIPE_WEBHOOK_SECRET), portalConfiguration: real(env.STRIPE_PORTAL_CONFIGURATION) };
 }
 
 type Params = Record<string, string | number | boolean | undefined>;
