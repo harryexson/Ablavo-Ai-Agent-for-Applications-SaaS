@@ -31,13 +31,17 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (mode === "production") throw new Error("ENCRYPTION_KEY is required in production (32 random bytes, base64)");
     encryptionKey = mode === "test" ? randomBytes(32).toString("base64") : "dev-only-insecure-encryption-key-change-me";
   }
+  const databaseUrl = env.DATABASE_URL && !/REPLACE_ME/.test(env.DATABASE_URL) ? env.DATABASE_URL : undefined;
+  // Never fall back to the embedded database in production: it would live on a disposable disk.
+  if (mode === "production" && !databaseUrl) throw new Error("DATABASE_URL is required in production");
+  if (mode === "production" && /REPLACE_ME/.test(encryptionKey)) throw new Error("Set a real ENCRYPTION_KEY");
   const portalUrl = env.PORTAL_URL ?? "http://localhost:3000/console";
   const marketingUrl = env.MARKETING_URL ?? "http://localhost:3000";
   return {
     env: mode,
     port: Number(env.PORT ?? 4000),
     host: env.HOST ?? "0.0.0.0",
-    databaseUrl: env.DATABASE_URL,
+    databaseUrl,
     redisUrl: env.REDIS_URL,
     publicApiUrl: env.PUBLIC_API_URL ?? `http://localhost:${env.PORT ?? 4000}`,
     portalUrl,

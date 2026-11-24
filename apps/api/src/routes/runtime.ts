@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { issueToken } from "@ablavo/auth";
 import { authorize, executeAction, requiresConfirmation, validateInput } from "@ablavo/action-engine";
+import { assertPublicUrl } from "@ablavo/knowledge-engine";
 import { type Directive, runTurn } from "@ablavo/agent-orchestrator";
 import { CLIENT_REPORTABLE_EVENTS } from "@ablavo/analytics";
 import {
@@ -205,6 +206,8 @@ async function runExecution(ctx: Ctx, rt: Runtime, executionId: string, runtime:
   if (!v.ok) throw new AppError("validation_failed", "Please complete the required fields", v.errors);
   await ctx.usage.assertAllowance(rt.session.orgId, "action_executions");
 
+  // Re-check at call time (DNS can change after registration).
+  await assertPublicUrl(def.executionUrl, { allowPrivateNetworks: ctx.config.allowPrivateFetch });
   const claimed = await ctx.db.update(actionExecutions).set({ status: "executing", input: v.value }).where(and(eq(actionExecutions.id, exe.id), eq(actionExecutions.status, "pending_confirmation"))).returning();
   if (!claimed.length) throw new AppError("conflict", "This action is already running");
 

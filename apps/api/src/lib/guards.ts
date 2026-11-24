@@ -49,7 +49,7 @@ export async function requireUser(ctx: Ctx, req: FastifyRequest, opts: { verifie
   return user;
 }
 
-export const isSuperadmin = (user: User) => user.platformRole === "superadmin";
+export const isSuperadmin = (user: User) => user.platformRole === "superadmin" && Boolean(user.emailVerifiedAt);
 
 export interface Membership {
   orgId: string;

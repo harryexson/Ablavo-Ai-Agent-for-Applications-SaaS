@@ -45,7 +45,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
     return reply.code(201).send({ user: { id, email, name: body.name, emailVerified: false }, devVerificationUrl });
   });
 
-  app.post("/v1/auth/login", { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (req, reply) => {
+  app.post("/v1/auth/login", { config: { rateLimit: { max: 10, timeWindow: "5 minutes", keyGenerator: (req: { body?: unknown; ip: string }) => `email:${String((req.body as { email?: unknown } | undefined)?.email ?? req.ip).toLowerCase().trim()}`, hook: "preHandler" } } }, async (req, reply) => {
     const body = parse(loginSchema, req.body);
     const [user] = await ctx.db.select().from(users).where(eq(users.email, body.email.toLowerCase().trim()));
     if (!user || !(await verifyPassword(body.password, user.passwordHash))) throw new AppError("unauthenticated", "Incorrect email or password");
@@ -95,7 +95,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
     return { ok: true, devVerificationUrl: await sendVerification(ctx, user) };
   });
 
-  app.post("/v1/auth/password-reset/request", { config: { rateLimit: { max: 5, timeWindow: "10 minutes" } } }, async (req) => {
+  app.post("/v1/auth/password-reset/request", { config: { rateLimit: { max: 5, timeWindow: "10 minutes", keyGenerator: (req: { body?: unknown; ip: string }) => `email:${String((req.body as { email?: unknown } | undefined)?.email ?? req.ip).toLowerCase().trim()}`, hook: "preHandler" } } }, async (req) => {
     const { email } = parse(z.object({ email: z.string().email() }), req.body);
     const [user] = await ctx.db.select().from(users).where(eq(users.email, email.toLowerCase()));
     let devResetUrl: string | undefined;

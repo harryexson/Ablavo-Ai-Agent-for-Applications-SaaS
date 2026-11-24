@@ -69,7 +69,7 @@ export async function buildApp(config: Config, db: Database, overrides: Partial<
     const isRuntime = RUNTIME_PREFIXES.some((p) => req.url.startsWith(p));
     if (!isRuntime && !config.corsOrigins.includes(origin)) throw new AppError("forbidden", "Origin not allowed");
   });
-  await app.register(rateLimit, { max: 300, timeWindow: "1 minute", keyGenerator: (req) => req.headers.authorization?.slice(-16) ?? req.ip });
+  await app.register(rateLimit, { max: 300, timeWindow: "1 minute", keyGenerator: (req) => req.ip });
   await app.register(multipart);
   await app.register(swagger, { mode: "static", specification: { document: openApiDocument(config) as never } });
   await app.register(swaggerUi, { routePrefix: "/docs" });

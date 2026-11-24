@@ -16,7 +16,7 @@ import {
   trainingLessons,
 } from "@ablavo/database";
 import { validateSchema } from "@ablavo/action-engine";
-import { detectFormat, discoverManifest } from "@ablavo/knowledge-engine";
+import { assertPublicUrl, detectFormat, discoverManifest } from "@ablavo/knowledge-engine";
 import { AppError, actionDefinitionSchema, manifestSchema, newId, onboardingPlanSchema, trainingLessonSchema } from "@ablavo/shared";
 import { requireApp, requireSecretKey, requireUser } from "../lib/guards";
 import { bearer, page, pageParams, parse } from "../lib/http";
@@ -299,6 +299,9 @@ export async function contentRoutes(app: FastifyInstance, ctx: Ctx) {
       const err = validateSchema(def.inputSchema);
       if (err) throw new AppError("validation_failed", `Invalid inputSchema for ${def.key}: ${err}`);
       if (ctx.config.env === "production" && !def.executionUrl.startsWith("https://")) throw new AppError("validation_failed", `executionUrl for ${def.key} must use https`);
+      await assertPublicUrl(def.executionUrl, { allowPrivateNetworks: ctx.config.allowPrivateFetch }).catch((e: Error) => {
+        throw new AppError("validation_failed", `executionUrl for ${def.key}: ${e.message}`);
+      });
       const [existing] = await ctx.db.select().from(actions).where(and(eq(actions.appId, application.id), eq(actions.key, def.key)));
       if (existing) {
         await ctx.db.update(actions).set({ definition: def, updatedAt: new Date() }).where(eq(actions.id, existing.id));
