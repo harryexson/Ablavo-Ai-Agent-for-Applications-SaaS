@@ -138,7 +138,7 @@ export async function organizationRoutes(app: FastifyInstance, ctx: Ctx) {
     const url = `${ctx.config.portalUrl}/invite?token=${token}`;
     await ctx.email.send({ to: body.email, subject: `${user.name} invited you to ${org!.name} on ${brand.name}`, text: `Join ${org!.name} as ${body.role}: ${url}` });
     await ctx.audit.log({ orgId, actorType: "user", actorId: user.id, action: "member.invited", metadata: { email: body.email, role: body.role }, ip: req.ip });
-    return reply.code(201).send({ id, devInviteUrl: !ctx.email.configured && ctx.config.env !== "production" ? url : undefined });
+    return reply.code(201).send({ id, devInviteUrl: !ctx.email.configured && ctx.config.showEmailLinks ? url : undefined });
   });
 
   app.post("/v1/invitations/accept", async (req) => {

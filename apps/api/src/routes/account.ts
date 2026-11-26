@@ -66,7 +66,7 @@ ${b.message}` });
     await ctx.email.send({ to: email, subject: `Confirm your new ${brand.name} email`, text: `Confirm this address for your ${brand.name} account: ${url}` });
     await ctx.email.send({ to: user.email, subject: `Your ${brand.name} email was changed`, text: `The email on your account was changed to ${email}. If this wasn't you, reset your password immediately.` });
     await ctx.audit.log({ orgId: null, actorType: "user", actorId: user.id, action: "account.email_changed", metadata: { from: user.email, to: email }, ip: req.ip });
-    return { ok: true, devVerificationUrl: !ctx.email.configured && ctx.config.env !== "production" ? url : undefined };
+    return { ok: true, devVerificationUrl: !ctx.email.configured && ctx.config.showEmailLinks ? url : undefined };
   });
 
   app.get("/v1/account/sessions", async (req) => {

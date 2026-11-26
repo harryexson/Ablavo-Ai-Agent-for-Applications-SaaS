@@ -25,7 +25,7 @@ async function sendVerification(ctx: Ctx, user: { id: string; email: string }) {
   const url = `${ctx.config.portalUrl}/verify-email?token=${token}`;
   await ctx.email.send({ to: user.email, subject: `Verify your ${brand.name} account`, text: `Welcome to ${brand.name}!\n\nConfirm your email address: ${url}\n\nThis link expires in 48 hours.` });
   // Without an email provider, development surfaces the link directly so the flow stays testable.
-  return !ctx.email.configured && ctx.config.env !== "production" ? url : undefined;
+  return !ctx.email.configured && ctx.config.showEmailLinks ? url : undefined;
 }
 
 export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
@@ -104,7 +104,7 @@ export async function authRoutes(app: FastifyInstance, ctx: Ctx) {
       await ctx.db.insert(emailTokens).values({ id: newId("tok"), userId: user.id, purpose: "reset_password", tokenHash: hash, expiresAt: new Date(Date.now() + 3600_000) });
       const url = `${ctx.config.marketingUrl}/reset-password?token=${token}`;
       await ctx.email.send({ to: user.email, subject: `Reset your ${brand.name} password`, text: `Reset your password: ${url}\n\nIf you didn't ask for this, ignore this email.` });
-      if (!ctx.email.configured && ctx.config.env !== "production") devResetUrl = url;
+      if (!ctx.email.configured && ctx.config.showEmailLinks) devResetUrl = url;
     }
     return { ok: true, devResetUrl }; // same response whether or not the account exists
   });
